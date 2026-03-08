@@ -176,6 +176,10 @@ const resetPassword = async (req, res) => {
 const googleSignIn = async (req, res) => {
     const { idToken } = req.body;
 
+    if (!idToken) {
+        return res.status(400).json({ message: 'ID token is required.' });
+    }
+
     try {
         const { googleId, email, name, picture } = await verifyGoogleToken(idToken);
         let user = await User.findOne({ $or: [{ googleId }, { email }] });
@@ -193,6 +197,7 @@ const googleSignIn = async (req, res) => {
 
         sendTokenResponse(user, 200, res, 'Google sign-in successful.');
     } catch (err) {
+        console.error('[Google Auth Error]:', err.message, err.stack);
         res.status(401).json({ message: 'Google authentication failed.', error: err.message });
     }
 };
